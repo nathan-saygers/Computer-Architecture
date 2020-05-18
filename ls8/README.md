@@ -65,6 +65,11 @@ but you'll have to implement those three above instructions first!
 * Read this whole file.
 * Skim the spec.
 
+FILES: 
+ - Examples Directory: Contains various binary coded instructions
+ - cpu.py: the main shiz
+ - ls8.py: imports cpu.py and runs
+
 ## Step 1: Add the constructor to `cpu.py`
 
 Add list properties to the `CPU` class to hold 256 bytes of memory and 8
