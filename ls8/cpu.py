@@ -28,7 +28,7 @@ class CPU:
         for line in prog_file:
             line_arr = line.split(" ")
             if line_arr[0][0] == '1' or line_arr[0][0] == '0':
-                print("loading...", int(line_arr[0], 2))
+                # print("loading...", int(line_arr[0], 2))
                 program.append(int(line_arr[0], 2))
 
         address = 0
@@ -51,7 +51,6 @@ class CPU:
 
         if op == "MUL":
             self.registers[reg_a] *= self.registers[reg_b]
-            print(self.registers[reg_a])
 
         else:
             raise Exception("Unsupported ALU operation")
@@ -90,12 +89,13 @@ class CPU:
                 self.pc += 3
 
             elif ir == self.commands['PRN']:
+                print(self.registers[operand_a])
                 self.pc += 2
 
             elif ir == self.commands['MUL']:
                 self.alu(
                     'MUL', operand_a, operand_b)
-                self.pc += 2
+                self.pc += 3
 
             else:
                 print(f'unknown instruction {instruction} at address {pc}')
