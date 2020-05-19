@@ -15,7 +15,8 @@ class CPU:
         self.commands = {
             'HLT': 0b00000001,
             'LDI': 0b10000010,
-            'PRN': 0b01000111
+            'PRN': 0b01000111,
+            'MUL': 0b10100010
         }
 
     def load(self, file):
@@ -27,6 +28,7 @@ class CPU:
         for line in prog_file:
             line_arr = line.split(" ")
             if line_arr[0][0] == '1' or line_arr[0][0] == '0':
+                print("loading...", int(line_arr[0], 2))
                 program.append(int(line_arr[0], 2))
 
         address = 0
@@ -45,8 +47,12 @@ class CPU:
         """ALU operations."""
 
         if op == "ADD":
-            self.reg[reg_a] += self.reg[reg_b]
-        # elif op == "SUB": etc
+            self.registers[reg_a] += self.registers[reg_b]
+
+        if op == "MUL":
+            self.registers[reg_a] *= self.registers[reg_b]
+            print(self.registers[reg_a])
+
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -69,12 +75,11 @@ class CPU:
             print(" %02X" % self.registers[i], end='')
 
     def run(self):
-        # store next two slots in case they are arguments
-        operand_a = self.ram_read(self.pc + 1)
-        operand_b = self.ram_read(self.pc + 2)
-
         while self.halted != True:
             # store ram slot at pc as instruction registry
+            # store next two slots in case they are arguments
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
             ir = self.ram[self.pc]
 
             if ir == self.commands['HLT']:
@@ -85,7 +90,11 @@ class CPU:
                 self.pc += 3
 
             elif ir == self.commands['PRN']:
-                print(self.registers[operand_a])
+                self.pc += 2
+
+            elif ir == self.commands['MUL']:
+                self.alu(
+                    'MUL', operand_a, operand_b)
                 self.pc += 2
 
             else:
