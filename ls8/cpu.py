@@ -97,6 +97,11 @@ class CPU:
                     'MUL', operand_a, operand_b)
                 self.pc += 3
 
+            elif ir == self.commands['ADD']:
+                self.alu(
+                    'ADD', operand_a, operand_b
+                )
+
             else:
                 print(f'unknown instruction {instruction} at address {pc}')
                 sys.exit(1)
