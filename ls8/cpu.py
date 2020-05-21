@@ -9,6 +9,7 @@ class CPU:
     def __init__(self):
         self.ram = [0] * 256
         self.pc = 0
+        self.sp = 255
         self.halted = False
         self.registers = [0] * 8
 
@@ -16,7 +17,12 @@ class CPU:
             'HLT': 0b00000001,
             'LDI': 0b10000010,
             'PRN': 0b01000111,
-            'MUL': 0b10100010
+            'MUL': 0b10100010,
+            'PSH': 0b01000101,
+            'POP': 0b01000110,
+            'ADD': 0b10100000,
+            'CAL': 0b01010000,
+            'RET': 0b00010001,
         }
 
     def load(self, file):
@@ -46,11 +52,13 @@ class CPU:
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
-        if op == "ADD":
+        if op == 'ADD':
             self.registers[reg_a] += self.registers[reg_b]
+            return
 
-        if op == "MUL":
+        if op == 'MUL':
             self.registers[reg_a] *= self.registers[reg_b]
+            return
 
         else:
             raise Exception("Unsupported ALU operation")
@@ -101,7 +109,35 @@ class CPU:
                 self.alu(
                     'ADD', operand_a, operand_b
                 )
+                self.pc += 3
+
+            elif ir == self.commands['PSH']:
+                self.sp -= 1
+                self.ram[self.sp] = self.registers[operand_a]
+                self.pc += 2
+
+            elif ir == self.commands['POP']:
+                self.registers[operand_a] = self.ram[self.sp]
+                self.pc += 2
+                self.sp += 1
+
+            elif ir == self.commands['CAL']:
+                # save return address
+                return_address = self.pc + 2
+                # Push it onto the stack
+                self.sp -= 1
+                self.ram[self.sp] = return_address
+                # Set the PC to the subroutine Address
+                self.pc = self.registers[operand_a]
+
+            elif ir == self.commands['RET']:
+                # Pop the return address off the stack
+                return_address = self.ram[self.sp]
+                self.sp += 1
+                # set pc to return address
+                self.pc = return_address
 
             else:
-                print(f'unknown instruction {instruction} at address {pc}')
+                print(
+                    f'unknown instruction at address {self.pc}')
                 sys.exit(1)
