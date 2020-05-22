@@ -12,6 +12,9 @@ class CPU:
         self.sp = 255
         self.halted = False
         self.registers = [0] * 8
+        self.e = 0
+        self.l = 0
+        self.g = 0
 
         self.commands = {
             'HLT': 0b00000001,
@@ -23,6 +26,10 @@ class CPU:
             'ADD': 0b10100000,
             'CAL': 0b01010000,
             'RET': 0b00010001,
+            'JMP': 0b01010100,
+            'JEQ': 0b01010101,
+            'JNE': 0b01010110,
+            'CMP': 0b10100111,
         }
 
     def load(self, file):
@@ -59,6 +66,21 @@ class CPU:
         if op == 'MUL':
             self.registers[reg_a] *= self.registers[reg_b]
             return
+
+        if op == 'CMP':
+            self.e = 0
+            self.l = 0
+            self.g = 0
+
+            if self.registers[reg_a] == self.registers[reg_b]:
+                self.e = 1
+                return
+            if self.registers[reg_a] > self.registers[reg_b]:
+                self.g = 1
+                return
+            if self.registers[reg_a] < self.registers[reg_b]:
+                self.l = 1
+                return
 
         else:
             raise Exception("Unsupported ALU operation")
@@ -111,6 +133,12 @@ class CPU:
                 )
                 self.pc += 3
 
+            elif ir == self.commands['CMP']:
+                self.alu(
+                    'CMP', operand_a, operand_b
+                )
+                self.pc += 3
+
             elif ir == self.commands['PSH']:
                 self.sp -= 1
                 self.ram[self.sp] = self.registers[operand_a]
@@ -136,6 +164,21 @@ class CPU:
                 self.sp += 1
                 # set pc to return address
                 self.pc = return_address
+
+            elif ir == self.commands['JMP']:
+                self.pc = self.registers[operand_a]
+
+            elif ir == self.commands['JEQ']:
+                if self.e == 1:
+                    self.pc = self.registers[operand_a]
+                else:
+                    self.pc += 2
+
+            elif ir == self.commands['JNE']:
+                if self.e == 0:
+                    self.pc = self.registers[operand_a]
+                else:
+                    self.pc += 2
 
             else:
                 print(
